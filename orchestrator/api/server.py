@@ -4,6 +4,7 @@ from typing import List
 
 from orchestrator.business.inventory_manager import inventory_mgr, InventoryItem
 from orchestrator.ai.nlp_agent import sysadmin_agent
+from orchestrator.core.docker_client import docker_mgr
 
 app = FastAPI(title="Tloque Nahuaque API", version="1.0.0")
 
@@ -45,3 +46,17 @@ def process_chat_command(req: ChatRequest):
     """Sends user string to NLP sysadmin agent and returns action context"""
     response_msg = sysadmin_agent.process_command(req.message)
     return {"status": "success", "agent_reply": response_msg}
+
+@app.post("/api/orchestration/deploy")
+def deploy_stack():
+    """Triggers the backend engine to build and run all services in the catalog"""
+    res = docker_mgr.deploy_stack()
+    if res.get("status") == "error":
+        raise HTTPException(status_code=500, detail=res.get("message"))
+    return res
+
+@app.get("/api/orchestration/status")
+def get_orchestration_status():
+    """Returns the live running state of all containers managed by the engine"""
+    containers = docker_mgr.list_containers()
+    return {"status": "success", "containers": containers}
