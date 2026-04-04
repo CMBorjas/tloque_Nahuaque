@@ -121,4 +121,20 @@ class InventoryManager:
                 desc = f"{item.name} stock ({item.quantity} {item.unit}) has dropped below threshold ({item.threshold} {item.unit})."
                 self.create_task(title, desc)
 
+    def get_all_tasks(self) -> List[Task]:
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT task_id, title, description, status, created_at FROM tasks')
+        rows = cursor.fetchall()
+        conn.close()
+        
+        return [Task(task_id=r[0], title=r[1], description=r[2], status=r[3], created_at=r[4]) for r in rows]
+
+    def update_task_status(self, task_id: int, status: str):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('UPDATE tasks SET status = ? WHERE task_id = ?', (status, task_id))
+        conn.commit()
+        conn.close()
+
 inventory_mgr = InventoryManager()
