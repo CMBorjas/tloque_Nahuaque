@@ -30,15 +30,24 @@ class ConversationalAgent:
     """The Conversational SysAdmin interface that interprets user prompts
     via the local LLM to execute management tasks.
     """
+    max_intents_per_message = 10
+
     def __init__(self):
         self.active_model = "qcwind/qwen2.5-7B-instruct-Q4_K_M:latest"
         self.api_url = "http://localhost:11434/api/generate"
-        
+
         self.system_prompt = '''You are the Conversational SysAdmin for Tloque Nahuaque.
-Your job is to read the user's natural language request and map it to a specific intent.
+Your job is to read the user's natural language request and map it to intent(s).
 You MUST respond with a perfectly valid JSON object and nothing else. Do not include markdown code blocks.
 
-Allowed Intents:
+Output format (pick ONE):
+1) Single intent — when the user asks for exactly one action:
+   {"intent": "<name>", ...optional fields...}
+2) Multiple intents — when the user clearly asks for several distinct actions in ONE message (executed in order).
+   {"intents": [ {...}, {...} ]}
+   Use at most 10 intents. Prefer a single intent when only one task is needed.
+
+Allowed intent names:
 - "list_containers": user wants to see Docker containers, status, what is running, docker ps style listing.
 - "restart_service": user wants to restart a Docker container. Set "target" to the exact container name (as shown in Docker).
 - "stop_service": user wants to stop a running Docker container. Set "target" to the container name.
@@ -48,7 +57,7 @@ Allowed Intents:
 - "consume_inventory": user wants to use or log stock usage. Set "item_id" to the item name/ID and "amount" to the int quantity.
 - "unknown": if the request doesn't match any of the above.
 
-Examples:
+Single-intent examples:
 {"intent": "list_containers"}
 {"intent": "restart_service", "target": "nextcloud"}
 {"intent": "stop_service", "target": "redis"}
@@ -56,6 +65,10 @@ Examples:
 {"intent": "pull_image", "image": "nginx:latest"}
 {"intent": "check_health"}
 {"intent": "consume_inventory", "item_id": "paper_01", "amount": 5}
+
+Multi-intent examples:
+{"intents": [{"intent": "list_containers"}, {"intent": "check_health"}]}
+{"intents": [{"intent": "pull_image", "image": "alpine:latest"}, {"intent": "list_containers"}]}
 '''
 
     def prompt_ollama(self, user_input: str) -> Dict[str, Any]:
@@ -163,11 +176,35 @@ Examples:
 
         return "I am sorry, I do not have a defined orchestration protocol for that request."
 
+    def _extract_intent_steps(self, parsed: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Turn LLM JSON into an ordered list of single-intent dicts (max max_intents_per_message)."""
+        if parsed.get("intent") in ("offline_error", "parse_error"):
+            return [parsed]
+        raw = parsed.get("intents")
+        if isinstance(raw, list) and raw:
+            steps = [x for x in raw if isinstance(x, dict) and x.get("intent")]
+            if not steps:
+                return [{"intent": "unknown"}]
+            if len(steps) > self.max_intents_per_message:
+                steps = steps[: self.max_intents_per_message]
+            return steps
+        if isinstance(parsed.get("intent"), str):
+            return [parsed]
+        return [{"intent": "unknown"}]
+
     def process_command(self, user_input: str) -> str:
         """Translates natural language into orchestrator engine commands and executes them"""
         print(f"Parsing natural language instruction: '{user_input}'...")
-        intent_data = self.prompt_ollama(user_input)
-        print(f"Parsed JSON Intent: {intent_data}")
-        return self.map_intent_to_action(intent_data)
+        parsed = self.prompt_ollama(user_input)
+        print(f"Parsed JSON Intent: {parsed}")
+        steps = self._extract_intent_steps(parsed)
+        if len(steps) == 1:
+            return self.map_intent_to_action(steps[0])
+        blocks: List[str] = []
+        total = len(steps)
+        for i, step in enumerate(steps, start=1):
+            out = self.map_intent_to_action(step)
+            blocks.append(f"[Step {i}/{total}]\n{out}")
+        return "\n\n---\n\n".join(blocks)
 
 sysadmin_agent = ConversationalAgent()
