@@ -7,3 +7,5 @@ catalog.yml
 
 # Docker
 docker-compose.override.yml
+
+.claude
