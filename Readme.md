@@ -9,80 +9,160 @@ The project addresses the growing need for small enterprises (legal, medical, an
 ## Core Features
 
 * **One-Touch Deployment:** Automated Docker orchestration that handles container lifecycle, networking, and volume persistence.
-* **Conversational SysAdmin:** A natural language interface that allows users to manage their server environment (updates, backups, and logs) without using a terminal.
+* **Conversational SysAdmin:** A natural language interface (powered by Ollama) that allows users to manage their server environment — supports single and multi-intent commands in plain English.
+* **Desktop Pet (Nahua):** A draggable desktop companion that floats on your screen, shows random chatter, receives Discord notifications, and lets you chat with the orchestrator from anywhere.
+* **Discord Integration:** A bot bridge that forwards Discord DMs and mentions to the orchestrator backend, with notification bubbles on the desktop pet.
 * **Air-Gapped Design:** Engineered to run entirely on a local network with optional encrypted tunneling for remote access.
 * **Resource Monitoring:** Real-time visualization of CPU, RAM, and storage health tailored for consumer-grade hardware.
-* **Smart Inventory Tracking:** Tracks dynamic business inventories and automatically generates customized procurement tasks when supplies fall below defined thresholds, tailored to the specific needs of the business.
-* **Centralized Identity Management (SSO):** Single Sign-On capabilities allowing administrators to provision and revoke employee access across all services from one unified portal.
-* **Automated Disaster Recovery:** Scheduled, encrypted snapshots of all system data and configurations, ensuring rapid recovery from localized failures or data corruption.
-* **Integrated Booking & CRM:** Built-in scheduling and lightweight client management capabilities, keeping all customer data and appointments strictly on-premises.
-* **Secure Internal Comms & Ticketing:** On-premise team chat and internal helpdesk to securely discuss sensitive client details and track IT requests.
+* **Smart Inventory Tracking:** Tracks dynamic business inventories and automatically generates customized procurement tasks when supplies fall below defined thresholds.
+* **Automated Disaster Recovery:** Scheduled, encrypted snapshots of all system data and configurations, ensuring rapid recovery from failures.
 * **Compliance & Audit Logging:** Aggregated, exportable system logs across all applications to simplify regulatory compliance (e.g., HIPAA/GDPR) reporting.
-
-## Long-Term Sustainability
-
-To guarantee that Tloque Nahuaque remains a sustainable, future-proof solution for small businesses, the architecture natively ensures:
-* **Zero Vendor Lock-In:** All configurations and backups are stored in standard formats (e.g., JSON, YAML, SQL dumps). If a business chooses to migrate away, their data remains fully accessible and portable.
-* **Automated Lifecycle Management:** The Orchestrator Engine handles both updates and rollbacks, removing the burden of manual version control from the user.
-* **Hardware Agnostic Migration:** The entire environment is containerized. Moving the system to a new, more powerful server in the future simply requires migrating the encrypted Docker volumes and re-running the setup script.
-* **Modular Ecosystem:** Users can disable any service they do not need, minimizing CPU/RAM footprint and ensuring the platform scales accurately with the operational growth of the business.
-
-## Architecture
-
-The system is built on a modular microservices architecture to ensure stability and ease of updates:
-
-* **Orchestrator Engine:** A Python-based backend utilizing the Docker SDK to manage container states and network configurations.
-* **Management UI:** A responsive React-based dashboard focused on accessibility and clear status reporting.
-* **Service Mesh:** Pre-configured Traefik or Nginx Proxy Manager instance for handling internal routing and automated SSL via Let's Encrypt or local CA.
-
-## Orchestrator Inventory
-
-The **Orchestrator Engine** is composed of several key components and modules that work together to manage the self-hosted environment:
-
-* **`core/docker_client.py`:** Interacts safely with the Docker SDK to handle container lifecycle, volumes, and persistent storage.
-* **`core/network_manager.py`:** Manages isolated Docker networks and proxy configurations for the Service Mesh.
-* **`api/server.py`:** A lightweight API server (e.g., FastAPI) exposing endpoints for the Management UI.
-* **`services/catalog.yml`:** The default service registry defining the configurations and environment requirements for the core stack.
-* **`business/inventory_manager.py`:** Tracks physical or resource inventories and hooks into the task generation pipeline to alert or create workflows when stock drops below thresholds.
-* **`ai/nlp_agent.py`:** The Conversational SysAdmin interface that interprets user prompts via the local LLM to execute management tasks.
-* **`monitor/telemetry.py`:** Gathers real-time resource usage statistics (CPU, RAM, Disks) for the dashboard.
-* **`security/sso_bridge.py`:** Synchronizes unified authentication and role-based access control policies across all running containers.
-* **`backup/snapshot_manager.py`:** Orchestrates routine, off-site encrypted data backups and manages emergency recovery procedures.
-* **`compliance/audit_logger.py`:** Aggregates container and access logs to provide tamper-evident reports for compliance reviews.
-
-## Included Service Stack
-
-The default "Ghost-Host" deployment includes the following enterprise-grade tools:
-
-1.  **Nextcloud:** Collaborative file storage and document editing.
-2.  **Vaultwarden:** Bitwarden-compatible credential and secret management.
-3.  **Ollama:** Localized Large Language Models for private data analysis.
-4.  **Uptime Kuma:** Service monitoring and notification system.
-5.  **Authentik:** Centralized identity proxy and single sign-on (SSO) provider.
-6.  **Cal.com:** Self-hosted infrastructure for privacy-first appointment scheduling and bookings.
-7.  **ERPNext (Core):** Lightweight open-source CRM and internal invoicing.
-8.  **Mattermost:** Secure, local-first team communication platform.
 
 ## Prerequisites
 
-* Linux-based OS (Ubuntu 22.04 LTS or Garuda Linux recommended)
-* Docker Engine 24.0+
-* Docker Compose V2
+* **Python 3.10+**
+* **Node.js 18+** and npm
+* **Docker Engine 24.0+** and Docker Compose V2
+* **Ollama** running locally (default port 11434)
 * Minimum 8GB RAM (16GB recommended for LLM usage)
 
-## Installation
+### Supported Platforms
 
-1. Clone the repository:
-   `git clone https://github.com/CMBORJAS/tloque_Nahuaque.git`
+| Platform | Status |
+|----------|--------|
+| macOS (Apple Silicon / Intel) | Fully supported |
+| Windows 10/11 | Fully supported |
+| Linux (Ubuntu 22.04+, etc.) | Fully supported |
 
-2. Navigate to the directory:
-   `cd tloque_Nahuaque`
+## Quick Start
 
-3. Initialize the setup script:
-   `./setup.sh`
+### 1. Clone the repository
 
-4. Access the dashboard:
-   Open `http://localhost:8080` in your browser.
+```bash
+git clone https://github.com/CMBORJAS/tloque_Nahuaque.git
+cd tloque_Nahuaque
+```
+
+### 2. Pull an Ollama model
+
+The SysAdmin AI requires a local LLM. Pull one before starting:
+
+```bash
+ollama pull qwen3.5:latest
+```
+
+### 3. Start everything
+
+**macOS / Linux:**
+```bash
+./start.sh
+```
+
+**Windows:**
+```cmd
+start.bat
+```
+
+This single command starts:
+- Backend API on `http://localhost:8000`
+- Frontend UI on `http://localhost:5173`
+- Nahua desktop pet on your screen
+
+### 4. Stop everything
+
+**macOS / Linux:**
+```bash
+./stop.sh
+```
+
+**Windows:**
+```cmd
+stop.bat
+```
+
+## Desktop Pet (Nahua)
+
+Nahua is a pixel-art robot companion that lives on your desktop — not limited to the browser.
+
+- **Drag** it anywhere on your screen
+- **Click** to open a chat window (talks to the orchestrator backend)
+- **Right-click** to quit
+- Shows random idle chatter and system tips
+- Displays Discord DM/mention notifications as purple bubbles
+
+### Discord Notifications
+
+To enable Discord notifications on the pet, create a `.env` file in the project root:
+
+```
+DISCORD_BOT_TOKEN=your_bot_token_here
+```
+
+The pet will connect to Discord and show incoming DMs and mentions as notification bubbles.
+
+### Auto-Start on Login (macOS)
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.nahua.desktoppet.plist
+```
+
+To disable:
+```bash
+launchctl unload ~/Library/LaunchAgents/com.nahua.desktoppet.plist
+```
+
+## Architecture
+
+The system is built on a modular microservices architecture:
+
+* **Orchestrator Engine:** A Python-based backend (FastAPI) utilizing the Docker SDK to manage container states and network configurations.
+* **Management UI:** A responsive React + TypeScript dashboard (Vite) with pages for health/telemetry, orchestration, inventory, compliance, and SysAdmin AI chat.
+* **Desktop Pet:** A PyQt6 native application that overlays on the desktop with chat and Discord integration.
+* **Discord Bot:** An async bridge that forwards Discord messages to the orchestrator API.
+
+## Orchestrator Modules
+
+| Module | Description |
+|--------|-------------|
+| `core/docker_client.py` | Docker SDK wrapper for container lifecycle, volumes, and image pulls |
+| `api/server.py` | FastAPI server exposing REST endpoints for the UI |
+| `ai/nlp_agent.py` | Conversational SysAdmin — maps natural language to intents via Ollama (supports multi-intent) |
+| `business/inventory_manager.py` | Inventory tracking with threshold-based procurement task generation |
+| `monitor/telemetry.py` | Real-time CPU, RAM, and disk usage metrics |
+| `backup/snapshot_manager.py` | Docker volume backup and disaster recovery |
+| `compliance/audit_logger.py` | Tamper-evident audit logs for compliance |
+| `discord_bot.py` | Discord bot bridge for remote orchestrator control |
+| `desktop_pet.py` | Nahua — the desktop pet companion |
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Backend health check |
+| GET | `/api/inventory` | List all inventory items |
+| POST | `/api/inventory` | Add/update an inventory item |
+| POST | `/api/inventory/consume` | Consume stock |
+| GET | `/api/inventory/tasks` | List procurement tasks |
+| PATCH | `/api/inventory/tasks/{id}` | Update task status |
+| POST | `/api/chat` | Send natural language command to SysAdmin AI |
+| POST | `/api/orchestration/deploy` | Deploy the service stack |
+| GET | `/api/orchestration/status` | List running containers |
+| POST | `/api/orchestration/backup` | Backup a Docker volume |
+| GET | `/api/system/telemetry` | System metrics (CPU, RAM, disk) |
+| GET | `/api/compliance/audit` | Audit logs |
+
+## Included Service Stack
+
+The default deployment includes:
+
+1. **Nextcloud:** Collaborative file storage and document editing.
+2. **Vaultwarden:** Bitwarden-compatible credential management.
+3. **Ollama:** Localized Large Language Models for private data analysis.
+4. **Uptime Kuma:** Service monitoring and notification system.
+5. **Authentik:** Centralized identity proxy and SSO provider.
+6. **Cal.com:** Self-hosted appointment scheduling.
+7. **ERPNext (Core):** Lightweight CRM and internal invoicing.
+8. **Mattermost:** Secure team communication platform.
 
 ## Security Model
 

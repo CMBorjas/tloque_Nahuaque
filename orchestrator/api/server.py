@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict
 
@@ -10,6 +11,19 @@ from orchestrator.backup.snapshot_manager import snapshot_manager
 from orchestrator.compliance.audit_logger import audit_logger
 
 app = FastAPI(title="Tloque Nahuaque API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://127.0.0.1:4173",
+        "http://localhost:4173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class HealthResponse(BaseModel):
     status: str

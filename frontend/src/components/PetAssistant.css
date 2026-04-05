@@ -1,0 +1,326 @@
+/* ── Pet wrapper: fixed bottom-right ── */
+.pet-wrapper {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.pet-wrapper > * {
+  pointer-events: auto;
+}
+
+/* ── Idle speech bubble ── */
+.pet-idle-bubble {
+  background: var(--bg-panel);
+  border: 1px solid var(--accent-dim);
+  border-radius: 12px 12px 4px 12px;
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  color: var(--text);
+  max-width: 180px;
+  text-align: center;
+  cursor: pointer;
+  animation: petBubblePop 0.3s ease-out;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes petBubblePop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ── The pet character ── */
+.pet-character {
+  width: 64px;
+  height: 64px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s;
+  animation: petBounce 2.5s ease-in-out infinite;
+}
+
+.pet-character:hover {
+  transform: scale(1.1);
+}
+
+.pet-character.thinking {
+  animation: petBounce 0.8s ease-in-out infinite;
+}
+
+.pet-character.happy {
+  animation: petWiggle 0.5s ease-in-out 3;
+}
+
+@keyframes petBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes petWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+.pet-body {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--accent), #2a6a8f);
+  border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(61, 154, 130, 0.4), inset 0 -4px 8px rgba(0,0,0,0.2);
+  overflow: visible;
+}
+
+.pet-antenna {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.pet-antenna::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: #5ee8c5;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(94, 232, 197, 0.6);
+}
+
+.pet-face {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 28px;
+}
+
+.pet-eyes {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.pet-eye {
+  width: 8px;
+  height: 10px;
+  background: #0a0f0d;
+  border-radius: 50%;
+  position: relative;
+  animation: petBlink 4s ease-in-out infinite;
+}
+
+.pet-eye::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 3px;
+  height: 3px;
+  background: white;
+  border-radius: 50%;
+}
+
+.pet-eye.squint {
+  height: 3px;
+  border-radius: 3px;
+  animation: none;
+}
+
+@keyframes petBlink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+.pet-mouth {
+  width: 8px;
+  height: 4px;
+  border-bottom: 2px solid #0a0f0d;
+  border-radius: 0 0 50% 50%;
+  margin: 4px auto 0;
+}
+
+.pet-mouth.happy {
+  width: 12px;
+  height: 6px;
+  border-bottom-width: 2.5px;
+}
+
+.pet-mouth.thinking {
+  width: 6px;
+  height: 6px;
+  border: 2px solid #0a0f0d;
+  border-radius: 50%;
+}
+
+/* ── Chat panel ── */
+.pet-chat-panel {
+  width: 300px;
+  max-height: 400px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  animation: petSlideUp 0.25s ease-out;
+}
+
+@keyframes petSlideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.pet-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, var(--accent), #2a6a8f);
+  color: #0a0f0d;
+}
+
+.pet-chat-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.pet-chat-close {
+  background: none;
+  border: none;
+  color: #0a0f0d;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.pet-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 160px;
+  max-height: 260px;
+}
+
+.pet-chat-empty {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+  margin: auto 0;
+  padding: 16px;
+  line-height: 1.5;
+}
+
+.pet-msg {
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  max-width: 88%;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.pet-msg-user {
+  align-self: flex-end;
+  background: var(--user-bubble);
+  border: 1px solid #354254;
+  color: var(--text);
+}
+
+.pet-msg-bot {
+  align-self: flex-start;
+  background: var(--assistant-bubble);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.pet-msg-thinking {
+  padding: 10px 16px;
+}
+
+/* typing dots */
+.pet-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.pet-dots span {
+  width: 6px;
+  height: 6px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  animation: petDot 1.2s ease-in-out infinite;
+}
+
+.pet-dots span:nth-child(2) { animation-delay: 0.2s; }
+.pet-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes petDot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+.pet-chat-composer {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-deep);
+}
+
+.pet-chat-input {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text);
+  outline: none;
+}
+
+.pet-chat-input:focus {
+  border-color: var(--accent-dim);
+}
+
+.pet-chat-send {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #0a0f0d;
+  cursor: pointer;
+}
+
+.pet-chat-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

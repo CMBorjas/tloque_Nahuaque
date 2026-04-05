@@ -1,0 +1,41 @@
+#!/bin/bash
+# Tloque Nahuaque - Initialization Script
+# Works on Linux/macOS (venv/bin) and Windows Git Bash / MSYS (venv/Scripts).
+set -e
+echo "Starting Tloque Nahuaque setup..."
+if command -v python3 &> /dev/null; then
+    PYTHON=python3
+else
+    PYTHON=python
+fi
+echo "1. Creating Python Virtual Environment..."
+if [ ! -d "venv" ]; then
+    "$PYTHON" -m venv venv
+fi
+echo "2. Installing dependencies..."
+if [ -f "venv/Scripts/activate" ]; then
+    # Windows (CPython venv uses Scripts, not bin)
+    . "venv/Scripts/activate"
+elif [ -f "venv/bin/activate" ]; then
+    # Linux / macOS
+    . "venv/bin/activate"
+else
+    echo "Could not find venv activate script (neither venv/Scripts nor venv/bin)."
+    exit 1
+fi
+pip install -r requirements.txt
+echo "3. Verifying Docker setup..."
+if ! command -v docker &> /dev/null; then
+    echo "Docker is not installed. Please install Docker Engine 24.0+."
+    exit 1
+fi
+echo "Setup COMPLETE!"
+echo ""
+echo "To start the orchestrator API server, run:"
+if [ -f "venv/Scripts/activate" ]; then
+    echo "  . venv/Scripts/activate    # Git Bash"
+    echo "  Or in PowerShell: .\\venv\\Scripts\\Activate.ps1"
+else
+    echo "  source venv/bin/activate"
+fi
+echo "  $PYTHON -m orchestrator.main"

@@ -86,14 +86,60 @@ class DockerClientManager:
             print(f"[WARN] Failed starting {service_name}: {str(e)}")
             return {"service": service_name, "status": "failed", "reason": str(e)}
 
-    def restart_service(self, service_name):
-        """Restarts a specific container"""
-        if not self.client: return False
+    def restart_service(self, service_name: str):
+        """Restarts a specific container by name or ID. Returns (ok, message)."""
+        if not self.client:
+            return False, "Docker daemon unreachable (SDK not connected)."
         try:
             container = self.client.containers.get(service_name)
             container.restart()
-            return True
+            return True, f"Container '{container.name}' restarted successfully."
         except docker.errors.NotFound:
-            return False
+            return False, f"No container named or matching ID '{service_name}'."
+        except docker.errors.APIError as e:
+            return False, str(e)
+
+    def stop_container(self, name: str):
+        """Stops a running container. Returns (ok, message)."""
+        if not self.client:
+            return False, "Docker daemon unreachable (SDK not connected)."
+        try:
+            container = self.client.containers.get(name)
+            if container.status != "running":
+                return False, f"Container '{container.name}' is not running (status: {container.status})."
+            container.stop(timeout=30)
+            return True, f"Container '{container.name}' stopped."
+        except docker.errors.NotFound:
+            return False, f"No container named or matching ID '{name}'."
+        except docker.errors.APIError as e:
+            return False, str(e)
+
+    def start_container(self, name: str):
+        """Starts an existing stopped container. Returns (ok, message)."""
+        if not self.client:
+            return False, "Docker daemon unreachable (SDK not connected)."
+        try:
+            container = self.client.containers.get(name)
+            if container.status == "running":
+                return False, f"Container '{container.name}' is already running."
+            container.start()
+            return True, f"Container '{container.name}' started."
+        except docker.errors.NotFound:
+            return False, f"No container named or matching ID '{name}'."
+        except docker.errors.APIError as e:
+            return False, str(e)
+
+    def pull_image(self, image_ref: str):
+        """Pull a container image from the configured registry (docker pull). Returns (ok, message)."""
+        if not self.client:
+            return False, "Docker daemon unreachable (SDK not connected)."
+        ref = (image_ref or "").strip()
+        if not ref:
+            return False, "No image reference given (e.g. nginx:latest or ghcr.io/org/image:tag)."
+        try:
+            self.client.images.pull(ref)
+            return True, f"Successfully pulled image '{ref}'."
+        except docker.errors.APIError as e:
+            return False, str(e)
 
 docker_mgr = DockerClientManager()
