@@ -7,6 +7,7 @@ from orchestrator.ai.nlp_agent import sysadmin_agent
 def mock_llm_request():
     test_prompts = [
         "Everything running okay? Check system health.",
+        "List all my Docker containers and their status.",
         "Hey, can you quickly restart the nextcloud container for me?",
         "We just used 5 boxes of paper_01, file it."
     ]
