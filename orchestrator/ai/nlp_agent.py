@@ -33,7 +33,7 @@ class ConversationalAgent:
     max_intents_per_message = 10
 
     def __init__(self):
-        self.active_model = "qcwind/qwen2.5-7B-instruct-Q4_K_M:latest"
+        self.active_model = "qwen3.5:latest"
         self.api_url = "http://localhost:11434/api/generate"
 
         self.system_prompt = '''You are the Conversational SysAdmin for Tloque Nahuaque.
@@ -78,13 +78,15 @@ Multi-intent examples:
             "prompt": user_input,
             "system": self.system_prompt,
             "stream": False,
-            "format": "json"
         }
         try:
             response = requests.post(self.api_url, json=payload, timeout=100)
             response.raise_for_status()
             data = response.json()
-            return json.loads(data.get("response", "{}"))
+            raw = data.get("response", "{}")
+            import re
+            raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+            return json.loads(raw)
         except requests.exceptions.RequestException as e:
             print(f"Failed to communicate with Ollama: {e}")
             return {"intent": "offline_error"}

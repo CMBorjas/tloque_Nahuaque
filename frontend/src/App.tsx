@@ -11,7 +11,9 @@ import {
   type Task,
 } from "./api";
 import { SysAdminChat } from "./components/SysAdminChat";
+import { PetAssistant } from "./components/PetAssistant";
 import "./App.css";
+import "./components/PetAssistant.css";
 
 type NavId = "dashboard" | "orchestration" | "inventory" | "compliance" | "chat";
 
@@ -93,6 +95,7 @@ export default function App() {
           {nav === "chat" && <SysAdminChat />}
         </div>
       </div>
+      <PetAssistant />
     </div>
   );
 }
