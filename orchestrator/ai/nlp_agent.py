@@ -43,6 +43,7 @@ Allowed Intents:
 - "restart_service": user wants to restart a Docker container. Set "target" to the exact container name (as shown in Docker).
 - "stop_service": user wants to stop a running Docker container. Set "target" to the container name.
 - "start_service": user wants to start an existing stopped Docker container. Set "target" to the container name.
+- "pull_image": user wants to download/pull a Docker image (docker pull). Set "image" to the image reference (e.g. nginx:latest, python:3.12-slim).
 - "check_health": user wants overall system / host health (CPU, memory, disk) plus a short Docker summary.
 - "consume_inventory": user wants to use or log stock usage. Set "item_id" to the item name/ID and "amount" to the int quantity.
 - "unknown": if the request doesn't match any of the above.
@@ -52,6 +53,7 @@ Examples:
 {"intent": "restart_service", "target": "nextcloud"}
 {"intent": "stop_service", "target": "redis"}
 {"intent": "start_service", "target": "redis"}
+{"intent": "pull_image", "image": "nginx:latest"}
 {"intent": "check_health"}
 {"intent": "consume_inventory", "item_id": "paper_01", "amount": 5}
 '''
@@ -113,6 +115,16 @@ Examples:
                 return "Error: Could not identify which container to start. Provide the container name."
             ok, msg = docker_mgr.start_container(str(target))
             return msg if ok else f"Start failed: {msg}"
+
+        elif intent == "pull_image":
+            image = intent_data.get("image") or intent_data.get("target")
+            if not image:
+                return (
+                    "Error: Could not identify which image to pull. "
+                    "Specify a reference like nginx:latest or quay.io/foo/bar:v1."
+                )
+            ok, msg = docker_mgr.pull_image(str(image))
+            return msg if ok else f"Pull failed: {msg}"
 
         elif intent == "check_health":
             parts: List[str] = []

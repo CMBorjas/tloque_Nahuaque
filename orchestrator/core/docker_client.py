@@ -129,4 +129,17 @@ class DockerClientManager:
         except docker.errors.APIError as e:
             return False, str(e)
 
+    def pull_image(self, image_ref: str):
+        """Pull a container image from the configured registry (docker pull). Returns (ok, message)."""
+        if not self.client:
+            return False, "Docker daemon unreachable (SDK not connected)."
+        ref = (image_ref or "").strip()
+        if not ref:
+            return False, "No image reference given (e.g. nginx:latest or ghcr.io/org/image:tag)."
+        try:
+            self.client.images.pull(ref)
+            return True, f"Successfully pulled image '{ref}'."
+        except docker.errors.APIError as e:
+            return False, str(e)
+
 docker_mgr = DockerClientManager()
